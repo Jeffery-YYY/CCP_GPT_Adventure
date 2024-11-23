@@ -1,0 +1,24 @@
+{
+    "name": "Test Diamond #1",
+    "description": "This is a test diamond for the DiamondTracking contract.",
+    "image": "https://example.com/images/diamond1.png",
+    "attributes": [
+      {
+        "trait_type": "Status",
+        "value": "Mined"
+      },
+      {
+        "trait_type": "Weight",
+        "value": "1.5 carat"
+      },
+      {
+        "trait_type": "Color",
+        "value": "D"
+      },
+      {
+        "trait_type": "Clarity",
+        "value": "VS1"
+      }
+    ]
+  }
+  

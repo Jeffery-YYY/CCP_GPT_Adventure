@@ -1,8 +1,8 @@
 import { ethers } from "ethers";
-import JewelryCertificate from "./artifacts/contracts/JewelryCertificate.json";
+import DiamondTracking from "./artifacts/contracts/DiamondTracking.json";
 
-const contractAddress = "0x1234567890abcdef1234567890abcdef12345678"; // 替换为您的合约地址
-const abi = JewelryCertificate.abi;
+const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // 替换为您的合约地址
+const abi = DiamondTracking.abi;
 
 export async function getContract() {
   const provider = new ethers.providers.Web3Provider(window.ethereum);

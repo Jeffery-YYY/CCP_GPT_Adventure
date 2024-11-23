@@ -1,98 +1,123 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
+import CreateCertificate from "./components/CreateCertificate";
+import LogEvent from "./components/LogEvent";
+import TransferOwnership from "./components/TransferOwnership";
+import FetchTokenURI from "./components/FetchTokenURI";
+import AuthorizeManufacturer from "./components/AuthorizeManufacturer";
 import config from "./config";
-import contractABI from "./artifacts/contracts/JewelryCertificate.json";
 
 function App() {
-    const [contract, setContract] = useState(null);
-    const [account, setAccount] = useState(null);
-    const [message, setMessage] = useState("");
-    const [tokenId, setTokenId] = useState("");
-    const [owner, setOwner] = useState("");
+  const [account, setAccount] = useState(null);
+  const [provider, setProvider] = useState(null);
+  const [signer, setSigner] = useState(null);
+  const [contract, setContract] = useState(null);
+  const [authorizedManufacturers, setAuthorizedManufacturers] = useState([]);
 
-    useEffect(() => {
-        const init = async () => {
-            try {
-                // 检查以太坊环境
-                if (!window.ethereum) {
-                    throw new Error("MetaMask is not installed!");
-                }
+  // 初始化钱包连接
+  useEffect(() => {
+    const initWalletConnection = async () => {
+      if (window.ethereum) {
+        try {
+          const ethersProvider = new ethers.providers.Web3Provider(window.ethereum);
+          setProvider(ethersProvider);
 
-                // 连接到 MetaMask
-                const provider = new ethers.providers.Web3Provider(window.ethereum);
-                const signer = provider.getSigner();
+          // 请求账户授权
+          const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+          setAccount(accounts[0]);
 
-                // 初始化合约
-                const deployedContract = new ethers.Contract(config.contractAddress, contractABI.abi, signer);
-                setContract(deployedContract);
+          const ethersSigner = ethersProvider.getSigner();
+          setSigner(ethersSigner);
 
-                // 获取账户
-                const accounts = await provider.send("eth_requestAccounts", []);
-                setAccount(accounts[0]);
-            } catch (error) {
-                console.error("Initialization error:", error);
-                setMessage("Failed to initialize the DApp.");
-            }
-        };
-        init();
-    }, []);
+          // 初始化合约
+          const ethersContract = new ethers.Contract(config.contractAddress, config.abi, ethersSigner);
+          setContract(ethersContract);
 
-    const createCertificate = async () => {
-        if (contract) {
-            try {
-                const tx = await contract.createCertificate(tokenId, owner);
-                await tx.wait();
-                setMessage(`Certificate ${tokenId} created successfully!`);
-            } catch (error) {
-                console.error("Error creating certificate:", error);
-                setMessage("Error creating certificate.");
-            }
+          // 获取授权制造商
+          await fetchAuthorizedManufacturers(ethersContract);
+        } catch (err) {
+          console.error("Error connecting to wallet:", err);
         }
+      } else {
+        alert("MetaMask is not installed. Please install it to use this DApp.");
+      }
     };
 
-    const logEvent = async () => {
-        if (contract) {
-            try {
-                const description = `Event for token ${tokenId}`;
-                const tx = await contract.logEvent(tokenId, description);
-                await tx.wait();
-                setMessage(`Event logged for token ${tokenId}.`);
-            } catch (error) {
-                console.error("Error logging event:", error);
-                setMessage("Error logging event.");
-            }
+    initWalletConnection();
+  }, []);
+
+  // 检测账户切换
+  useEffect(() => {
+    if (window.ethereum) {
+      window.ethereum.on("accountsChanged", (accounts) => {
+        setAccount(accounts[0]);
+        window.location.reload();
+      });
+
+      window.ethereum.on("chainChanged", () => {
+        window.location.reload();
+      });
+    }
+  }, []);
+
+  // 获取授权制造商
+  const fetchAuthorizedManufacturers = async (contractInstance) => {
+    try {
+      const manufacturers = [];
+      const filter = contractInstance.filters.AuthorizedManufacturerChanged();
+      const events = await contractInstance.queryFilter(filter);
+      
+      events.forEach((event) => {
+        const { manufacturer, status } = event.args;
+        if (status) {
+          manufacturers.push(manufacturer);
+        } else {
+          const index = manufacturers.indexOf(manufacturer);
+          if (index > -1) {
+            manufacturers.splice(index, 1);
+          }
         }
-    };
+      });
 
-    return (
-        <div>
-            <h1>Jewelry Certificate DApp</h1>
-            <p>Connected Account: {account || "Not connected"}</p>
+      setAuthorizedManufacturers(manufacturers);
+    } catch (error) {
+      console.error("Error fetching authorized manufacturers:", error);
+    }
+  };
 
-            <div>
-                <label>Token ID: </label>
-                <input
-                    type="text"
-                    value={tokenId}
-                    onChange={(e) => setTokenId(e.target.value)}
-                    placeholder="Enter Token ID"
-                />
-            </div>
-            <div>
-                <label>Owner Address: </label>
-                <input
-                    type="text"
-                    value={owner}
-                    onChange={(e) => setOwner(e.target.value)}
-                    placeholder="Enter Owner Address"
-                />
-            </div>
-            <button onClick={createCertificate}>Create Certificate</button>
-            <button onClick={logEvent}>Log Event</button>
-
-            <p>{message}</p>
-        </div>
-    );
+  return (
+    <div>
+      <h1>Diamond Tracking DApp</h1>
+      {account ? (
+        <p>Connected Account: {account}</p>
+      ) : (
+        <p>Please connect your MetaMask wallet.</p>
+      )}
+      {contract ? (
+        <>
+          <CreateCertificate contract={contract} />
+          <LogEvent contract={contract} />
+          <TransferOwnership contract={contract} />
+          <FetchTokenURI contract={contract} />
+          <AuthorizeManufacturer contract={contract} fetchAuthorizedManufacturers={fetchAuthorizedManufacturers} />
+          <div>
+            <h3>Authorized Manufacturers</h3>
+            <ul>
+              {authorizedManufacturers.length > 0 ? (
+                authorizedManufacturers.map((manufacturer, index) => (
+                  <li key={index}>{manufacturer}</li>
+                ))
+              ) : (
+                <p>No authorized manufacturers found.</p>
+              )}
+            </ul>
+          </div>
+        </>
+      ) : (
+        <p>Loading contract...</p>
+      )}
+    </div>
+  );
 }
 
 export default App;
