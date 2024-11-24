@@ -1,34 +1,50 @@
+require("dotenv").config();
 const { ethers } = require("hardhat");
 
 async function main() {
-  // 使用自定义私钥
-  const privateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"; // 替换为你的私钥
-  const provider = new ethers.providers.JsonRpcProvider("http://127.0.0.1:8545"); // 本地网络
-  const wallet = new ethers.Wallet(privateKey, provider);
+  // 获取部署账户
+  const [deployer] = await ethers.getSigners();
 
-  // 打印部署者信息
-  const balanceBefore = await wallet.getBalance();
-  console.log("Deploying contract with the account:", wallet.address);
+  // 输出部署账户的信息
+  const balanceBefore = await deployer.getBalance();
+  console.log("Deploying contract with the account:", deployer.address);
   console.log("Deployer account balance before deployment:", ethers.utils.formatEther(balanceBefore), "ETH");
 
-  // 使用私钥账户部署合约
-  const ContractFactory = await ethers.getContractFactory("DiamondTracking", wallet);
-  const contract = await ContractFactory.deploy();
+  // 获取合约工厂并部署合约
+  const JewelryCertificate = await ethers.getContractFactory("JewelryCertificate");
+  const contract = await JewelryCertificate.deploy();
   await contract.deployed();
 
-  // 打印部署后信息
-  const balanceAfter = await wallet.getBalance();
+  // 输出合约部署信息
+  const balanceAfter = await deployer.getBalance();
   console.log("Contract deployed to:", contract.address);
-  console.log("Contract owner (deployer):", await contract.owner());
+  console.log("Contract owner (deployer):", deployer.address);
   console.log("Deployer account balance after deployment:", ethers.utils.formatEther(balanceAfter), "ETH");
 
-  console.log("\nEnsure your frontend uses this account to interact with the contract:");
-  console.log(wallet.address);
+  // 自动授权部署者账户
+  console.log("\nAuthorizing the deployer as a manufacturer...");
+  const authorizeTx = await contract.authorizeManufacturer(deployer.address);
+  await authorizeTx.wait();
+  console.log("Deployer authorized as a manufacturer.");
+
+  // 如果需要，可以添加额外账户授权
+  const extraAccountAddress = process.env.EXTRA_ACCOUNT_ADDRESS; // 从 .env 文件中获取额外账户地址
+  if (extraAccountAddress) {
+    console.log(`Authorizing extra account: ${extraAccountAddress}...`);
+    const extraAuthorizeTx = await contract.authorizeManufacturer(extraAccountAddress);
+    await extraAuthorizeTx.wait();
+    console.log(`Account ${extraAccountAddress} authorized as a manufacturer.`);
+  }
+
+  console.log("\nDeployment and setup complete!");
+  console.log("Contract Address:", contract.address);
+  console.log("Deployer Address:", deployer.address);
 }
 
+// 执行部署脚本
 main()
   .then(() => process.exit(0))
   .catch((error) => {
-    console.error(error);
+    console.error("Error during deployment:", error);
     process.exit(1);
   });
