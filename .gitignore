@@ -17,4 +17,5 @@ node_modules
 ignition/deployments/chain-31337
 
 build/
-dist/
+dist/frontend/
+frontend/
