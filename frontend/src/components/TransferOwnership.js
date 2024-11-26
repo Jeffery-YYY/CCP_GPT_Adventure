@@ -1,93 +1,51 @@
 import React, { useState } from "react";
+import { ethers } from "ethers";
+import contractABI from "../JewelryCertificateABI.json";
 
-function TransferOwnership({ contract }) {
-  // 定义组件状态
-  const [tokenId, setTokenId] = useState(""); // 用户输入的 Token ID
-  const [newOwner, setNewOwner] = useState(""); // 用户输入的新所有者地址
-  const [status, setStatus] = useState(""); // 显示操作状态
-  const [loading, setLoading] = useState(false); // 按钮加载状态
+const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS;
 
-  // 定义函数，用于调用智能合约的 transferCertificateOwnership 方法
+function TransferOwnership() {
+  const [tokenId, setTokenId] = useState("");
+  const [newOwner, setNewOwner] = useState("");
+
   const transferOwnership = async () => {
-    // 输入验证
-    if (!tokenId.trim() || !newOwner.trim()) {
-      setStatus("Error: Token ID and New Owner Address are required.");
+    if (!ethers.utils.isAddress(newOwner)) {
+      alert("Invalid new owner address");
       return;
     }
-
-    if (isNaN(tokenId) || Number(tokenId) < 0) {
-      setStatus("Error: Token ID must be a valid non-negative number."); // 校验 Token ID 是否有效
-      return;
-    }
-
-    setLoading(true); // 开始加载
-    setStatus("Processing ownership transfer..."); // 提示状态更新
 
     try {
-      // 确认合约是否已初始化
-      if (!contract) {
-        throw new Error("Error: Contract not initialized.");
-      }
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
-      // 调用智能合约的 transferCertificateOwnership 方法
-      const tx = await contract.transferCertificateOwnership(tokenId, newOwner);
-      console.log("Transaction sent:", tx); // 打印交易信息
-
-      setStatus(`Transaction sent. Hash: ${tx.hash}. Waiting for confirmation...`);
-
-      // 等待交易被区块链确认
+      const tx = await contract.transferCertificateOwnership(tokenId, newOwner, {
+        gasLimit: ethers.utils.hexlify(200000),
+      });
       await tx.wait();
-      console.log("Transaction confirmed:", tx); // 打印确认信息
-
-      // 显示成功状态
-      setStatus(`Success: Ownership of Token ID ${tokenId} transferred to ${newOwner}.`);
+      alert("Ownership transferred successfully!");
     } catch (error) {
-      console.error("Error transferring ownership:", error); // 打印错误信息
-
-      // 处理详细错误信息
-      const errorMessage = error.data?.message || error.message || "An unexpected error occurred.";
-      setStatus(`Error: Failed to transfer ownership: ${errorMessage}`);
-    } finally {
-      setLoading(false); // 恢复按钮状态
+      console.error("Error transferring ownership:", error);
+      alert("Failed to transfer ownership. Check console for details.");
     }
   };
 
-  // 渲染组件界面
   return (
-    <div className="component">
+    <div>
       <h2>Transfer Ownership</h2>
-      <div>
-        {/* 输入 Token ID */}
-        <label>
-          Token ID:
-          <input
-            type="text"
-            placeholder="Enter Token ID"
-            value={tokenId}
-            onChange={(e) => setTokenId(e.target.value.trim())} // 去除多余空格
-            disabled={loading} // 禁用输入框
-          />
-        </label>
-      </div>
-      <div>
-        {/* 输入新所有者地址 */}
-        <label>
-          New Owner Address:
-          <input
-            type="text"
-            placeholder="Enter New Owner Address"
-            value={newOwner}
-            onChange={(e) => setNewOwner(e.target.value.trim())} // 去除多余空格
-            disabled={loading} // 禁用输入框
-          />
-        </label>
-      </div>
-      {/* 提交按钮 */}
-      <button onClick={transferOwnership} disabled={loading || !contract}>
-        {loading ? "Transferring..." : "Transfer"} {/* 按钮动态文本 */}
-      </button>
-      {/* 显示状态消息 */}
-      {status && <p>{status}</p>}
+      <input
+        type="text"
+        placeholder="Token ID"
+        value={tokenId}
+        onChange={(e) => setTokenId(e.target.value)}
+      />
+      <input
+        type="text"
+        placeholder="New Owner Address"
+        value={newOwner}
+        onChange={(e) => setNewOwner(e.target.value)}
+      />
+      <button onClick={transferOwnership}>Transfer Ownership</button>
     </div>
   );
 }

@@ -41,3 +41,30 @@ metamask网络配置：
 默认RPC URL： 127.0.0.1：8545
 链ID： 31337
 货币符号： ETH
+
+# To-do List
+- 给用户赋予角色（5种角色类型）
+
+  通过合约主人通过地址授权（在Authorize User这里扩写）
+
+- Log Event 的Token ID根据状态显示在不同角色的下拉框中
+
+- Log Event Description不同角色不同的功能
+
+- 客户购买的珠宝需要验证tokenid 有没有前5个event
+
+- create Certificate作为采矿公司角色的功能
+
+
+# 新增功能
+新增五位默认角色
+
+
+
+
+
+# 一些排查问题的方法
+```
+npx hardhat console --network localhost
+```
+打开hardhat控制台，可以通过js直接与合约交互
