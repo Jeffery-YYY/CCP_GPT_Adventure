@@ -1,16 +1,31 @@
 import React, { useState } from "react";
 import { ethers } from "ethers";
 import contractABI from "../JewelryCertificateABI.json";
+import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  TextField,
+  Typography,
+  Alert,
+} from "@mui/material";
 
 const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS;
 
 function TransferOwnership() {
   const [tokenId, setTokenId] = useState("");
   const [newOwner, setNewOwner] = useState("");
+  const [alert, setAlert] = useState(null);
+
+  const handleAlert = (message, severity) => {
+    setAlert({ message, severity });
+    setTimeout(() => setAlert(null), 5000);
+  };
 
   const transferOwnership = async () => {
     if (!ethers.utils.isAddress(newOwner)) {
-      alert("Invalid new owner address");
+      handleAlert("Invalid new owner address", "error");
       return;
     }
 
@@ -23,30 +38,57 @@ function TransferOwnership() {
         gasLimit: ethers.utils.hexlify(200000),
       });
       await tx.wait();
-      alert("Ownership transferred successfully!");
+      handleAlert("Ownership transferred successfully!", "success");
     } catch (error) {
       console.error("Error transferring ownership:", error);
-      alert("Failed to transfer ownership. Check console for details.");
+      handleAlert("Failed to transfer ownership. Check console for details.", "error");
     }
   };
 
   return (
-    <div>
-      <h2>Transfer Ownership</h2>
-      <input
-        type="text"
-        placeholder="Token ID"
-        value={tokenId}
-        onChange={(e) => setTokenId(e.target.value)}
-      />
-      <input
-        type="text"
-        placeholder="New Owner Address"
-        value={newOwner}
-        onChange={(e) => setNewOwner(e.target.value)}
-      />
-      <button onClick={transferOwnership}>Transfer Ownership</button>
-    </div>
+    <Card sx={{ margin: 2, padding: 2, textAlign: "center" }}>
+      <CardContent>
+        <Typography variant="h5" gutterBottom>
+          Transfer Ownership
+        </Typography>
+        <Typography variant="body2" color="textSecondary" gutterBottom>
+          Enter the Token ID and new owner's address to transfer ownership.
+        </Typography>
+        {alert && <Alert severity={alert.severity}>{alert.message}</Alert>}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            marginTop: 2,
+          }}
+        >
+          <TextField
+            label="Token ID"
+            variant="outlined"
+            value={tokenId}
+            onChange={(e) => setTokenId(e.target.value)}
+            sx={{ width: "50%" }}
+          />
+          <TextField
+            label="New Owner Address"
+            variant="outlined"
+            value={newOwner}
+            onChange={(e) => setNewOwner(e.target.value)}
+            sx={{ width: "50%" }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={transferOwnership}
+            sx={{ width: "50%" }}
+          >
+            Transfer Ownership
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }
 

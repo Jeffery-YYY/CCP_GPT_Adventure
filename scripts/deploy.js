@@ -9,24 +9,18 @@ async function main() {
   const balanceBefore = await deployer.getBalance();
   console.log("Deployer account balance before deployment:", ethers.utils.formatEther(balanceBefore), "ETH");
 
+  // 超级管理员地址
+  const superAdmin = deployer.address;
+  console.log("\nSuper Admin (default admin role):", superAdmin);
+
   // 部署合约
   console.log("\nDeploying JewelryCertificate contract...");
   const JewelryCertificate = await ethers.getContractFactory("JewelryCertificate");
-  const contract = await JewelryCertificate.deploy();
+  const contract = await JewelryCertificate.deploy(superAdmin); // 传入 superAdmin 参数
   await contract.deployed();
 
   console.log("\nContract deployed to:", contract.address);
   console.log("Deployer account balance after deployment:", ethers.utils.formatEther(await deployer.getBalance()), "ETH");
-
-  // 分配 DEFAULT_ADMIN_ROLE 给部署者
-  const DEFAULT_ADMIN_ROLE = ethers.utils.id("DEFAULT_ADMIN_ROLE");
-  try {
-    await contract.grantRole(DEFAULT_ADMIN_ROLE, deployer.address);
-    console.log("\nDEFAULT_ADMIN_ROLE granted to deployer:", deployer.address);
-  } catch (error) {
-    console.error("Error granting DEFAULT_ADMIN_ROLE:", error);
-    process.exit(1);
-  }
 
   // 从 .env 文件加载角色地址
   const roles = {

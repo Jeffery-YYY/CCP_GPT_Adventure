@@ -32,6 +32,7 @@ npm install --force
 cd ..   # 回到根目录
 npx hardhat node     # 生成本地测试账号
 npx hardhat run scripts/deploy.js   # 部署合约,复制地址填入.env
+npx hardhat run scripts/grantRole.js
 cd frontend
 npm start   #  启动前端
 ```
@@ -43,21 +44,18 @@ metamask网络配置：
 货币符号： ETH
 
 # To-do List
-- 给用户赋予角色（5种角色类型）
+- 给用户赋予角色（5种角色类型）√
 
   通过合约主人通过地址授权（在Authorize User这里扩写）
 
 - Log Event 的Token ID根据状态显示在不同角色的下拉框中
 
-- Log Event Description不同角色不同的功能
+- Log Event Description不同角色不同的功能√
 
-- 客户购买的珠宝需要验证tokenid 有没有前5个event
+- 客户购买的珠宝需要验证tokenid 有没有前5个event（还没测试）
 
-- create Certificate作为采矿公司角色的功能
+- create Certificate作为采矿公司角色的功能√
 
-
-# 新增功能
-新增五位默认角色
 
 
 

@@ -1,6 +1,12 @@
 [
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_superAdmin",
+        "type": "address"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
@@ -103,9 +109,9 @@
       },
       {
         "indexed": false,
-        "internalType": "string",
+        "internalType": "enum JewelryCertificate.Status",
         "name": "status",
-        "type": "string"
+        "type": "uint8"
       }
     ],
     "name": "EventLogged",
@@ -383,19 +389,6 @@
         "internalType": "uint256",
         "name": "tokenId",
         "type": "uint256"
-      }
-    ],
-    "name": "burnCertificate",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "tokenId",
-        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -424,9 +417,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "string",
+        "internalType": "enum JewelryCertificate.Status",
         "name": "status",
-        "type": "string"
+        "type": "uint8"
       },
       {
         "internalType": "address",
@@ -456,6 +449,11 @@
         "internalType": "string",
         "name": "description",
         "type": "string"
+      },
+      {
+        "internalType": "enum JewelryCertificate.Status",
+        "name": "status",
+        "type": "uint8"
       },
       {
         "internalType": "uint256",
@@ -493,46 +491,12 @@
         "type": "uint256"
       }
     ],
-    "name": "getCertificateDetails",
+    "name": "getCurrentStatus",
     "outputs": [
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "id",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "status",
-            "type": "string"
-          },
-          {
-            "internalType": "address",
-            "name": "currentOwner",
-            "type": "address"
-          }
-        ],
-        "internalType": "struct JewelryCertificate.Diamond",
+        "internalType": "enum JewelryCertificate.Status",
         "name": "",
-        "type": "tuple"
-      },
-      {
-        "components": [
-          {
-            "internalType": "string",
-            "name": "description",
-            "type": "string"
-          },
-          {
-            "internalType": "uint256",
-            "name": "timestamp",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct JewelryCertificate.Event[]",
-        "name": "",
-        "type": "tuple[]"
+        "type": "uint8"
       }
     ],
     "stateMutability": "view",
@@ -554,6 +518,11 @@
             "internalType": "string",
             "name": "description",
             "type": "string"
+          },
+          {
+            "internalType": "enum JewelryCertificate.Status",
+            "name": "status",
+            "type": "uint8"
           },
           {
             "internalType": "uint256",
@@ -667,9 +636,9 @@
         "type": "string"
       },
       {
-        "internalType": "string",
+        "internalType": "enum JewelryCertificate.Status",
         "name": "newStatus",
-        "type": "string"
+        "type": "uint8"
       }
     ],
     "name": "logEvent",
@@ -707,13 +676,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "pauseContract",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -835,6 +797,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "superAdmin",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes4",
@@ -922,13 +897,6 @@
       }
     ],
     "name": "transferFrom",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "unpauseContract",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
